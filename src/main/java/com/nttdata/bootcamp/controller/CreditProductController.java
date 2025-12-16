@@ -35,35 +35,41 @@ public class CreditProductController {
     @GetMapping("/findAllCreditProductsByCustomer/{dni}")
     public Flux<CreditProduct> findAllByCustomer(@PathVariable String dni) {
         return creditProductService.findAllCreditProductsByCustomer(dni)
-                .doOnSubscribe(s -> LOGGER.info("Fetching credit produc for customer {}", dni))
-                .doOnNext(dc -> LOGGER.info("CreditProduct: {}", dc));
+                .doOnSubscribe(s ->
+                        LOGGER.info("Fetching credit produc for customer {}", dni))
+                .doOnNext(dc ->
+                        LOGGER.info("CreditProduct: {}", dc));
     }
 
     @GetMapping("/findAccountsByCreditProduct/{creditProduct}")
     public Flux<CreditProduct> findAccountsByCreditProduct(@PathVariable String creditProductNumber) {
         return creditProductService.findAccountsByCreditProduct(creditProductNumber)
-                .doOnSubscribe(s -> LOGGER.info("Fetching accounts for CreditProduct {}", creditProductNumber))
-                .doOnNext(dc -> LOGGER.info("Account: {}", dc));
+                .doOnSubscribe(s ->
+                        LOGGER.info("Fetching accounts for CreditProduct {}", creditProductNumber))
+                .doOnNext(dc ->
+                        LOGGER.info("Account: {}", dc));
     }
 
     @GetMapping("/findMainAccountsByCreditProduct/{creditProductNumber}")
     public Mono<CreditProduct> findMainAccountsByCreditProduct(@PathVariable String creditProductNumber) {
         return creditProductService.findMainAccountsByCreditProduct(creditProductNumber)
-                .doOnSubscribe(s -> LOGGER.info("Searching main account for CreditProduct {}", creditProductNumber))
-                .doOnSuccess(dc -> LOGGER.info("Main account: {}", dc));
+                .doOnSubscribe(s ->
+                        LOGGER.info("Searching main account for CreditProduct {}", creditProductNumber))
+                .doOnSuccess(dc ->
+                        LOGGER.info("Main account: {}", dc));
     }
 
     @GetMapping("/findByAccountNumber/{accountNumber}")
     public Mono<CreditProduct> findByAccountNumber(@PathVariable String accountNumber) {
         return creditProductService.findCreditProductByAccount(accountNumber)
-                .doOnSubscribe(s -> LOGGER.info("Searching CreditProduct by account {}", accountNumber))
-                .doOnSuccess(dc -> LOGGER.info("Found CreditProduct: {}", dc));
+                .doOnSubscribe(s ->
+                        LOGGER.info("Searching CreditProduct by account {}", accountNumber))
+                .doOnSuccess(dc ->
+                        LOGGER.info("Found CreditProduct: {}", dc));
     }
 
-
-
     // ================================
-    // SAVE (REACTIVO)
+    // SAVE
     // ================================
     @PostMapping("/saveCreditProduct")
     public Mono<CreditProduct> saveCreditProduct(@RequestBody CreditProductDto dto) {
@@ -72,28 +78,23 @@ public class CreditProductController {
                     CreditProduct d = new CreditProduct();
                     d.setDni(dto.getDni());
                     d.setTypeCustomer(dto.getTypeCustomer());
-
-                    // cuenta opcional
                     String acc = dto.getAccountNumber();
                     d.setAccountNumber((acc == null || acc.isBlank()) ? null : acc);
-
                     d.setCreditProductNumber(dto.getCreditProductNumber());
                     d.setDescription(dto.getDescription());
                     d.setStatus(Constant.CREDITPRODUCT_ACTIVE);
-
-                    // si no hay cuenta, no tiene sentido "mainAccount"
                     d.setMainAccount(d.getAccountNumber() != null);
-
                     d.setCreationDate(new Date());
                     d.setModificationDate(new Date());
                     return d;
                 })
-                .flatMap(data -> creditProductService.saveCreditProduct(data, true));
+                .flatMap(data ->
+                        creditProductService.saveCreditProduct(data, true));
     }
 
 
     // ================================
-    // ASSOCIATION (REACTIVO)
+    // ASSOCIATION
     // ================================
     @PostMapping("/associationCreditProduct/{creditProductNumber}/{numberAccount}")
     public Mono<CreditProduct> association(
@@ -111,13 +112,15 @@ public class CreditProductController {
                     return d;
                 })
                 .flatMap(creditProductService::updateMainCreditProduct)
-                .doOnSubscribe(s -> LOGGER.info("Associating {} with account {}", creditProductNumber, numberAccount))
-                .doOnSuccess(dc -> LOGGER.info("Associated: {}", dc));
+                .doOnSubscribe(s ->
+                        LOGGER.info("Associating {} with account {}", creditProductNumber, numberAccount))
+                .doOnSuccess(dc ->
+                        LOGGER.info("Associated: {}", dc));
     }
 
 
     // ================================
-    // DELETE ASSOCIATION (REACTIVO)
+    // DELETE ASSOCIATION
     // ================================
     @PostMapping("/deleteAssociationCreditProduct/{creditProductNumber}/{numberAccount}")
     public Mono<CreditProduct> deleteAssociation(
@@ -135,10 +138,11 @@ public class CreditProductController {
                     return d;
                 })
                 .flatMap(creditProductService::updateMainCreditProduct)
-                .doOnSubscribe(s -> LOGGER.info("Deleting association of {} with {}", creditProductNumber, numberAccount))
-                .doOnSuccess(dc -> LOGGER.info("Deleted association: {}", dc));
+                .doOnSubscribe(s ->
+                        LOGGER.info("Deleting association of {} with {}", creditProductNumber, numberAccount))
+                .doOnSuccess(dc ->
+                        LOGGER.info("Deleted association: {}", dc));
     }
-
 
     // ================================
     // FALLBACK
